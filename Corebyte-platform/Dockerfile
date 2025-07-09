@@ -9,11 +9,20 @@ EXPOSE 8081
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
+
+# Copy solution and project files first
 COPY ["Corebyte-platform.sln", "./"]
-RUN dotnet restore "./Corebyte-platform.csproj"
+COPY ["Corebyte-platform/Corebyte-platform.csproj", "Corebyte-platform/"]
+
+# Restore dependencies
+RUN dotnet restore "Corebyte-platform/Corebyte-platform.csproj"
+
+# Copy the rest of your source code
 COPY . .
-WORKDIR "/src/."
-RUN dotnet build "./Corebyte-platform.csproj" -c $BUILD_CONFIGURATION -o /app/build
+
+# Build the application
+WORKDIR "/src/Corebyte-platform"
+RUN dotnet build "Corebyte-platform.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
 FROM build AS publish
 ARG BUILD_CONFIGURATION=Release
